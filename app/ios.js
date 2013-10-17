@@ -823,7 +823,7 @@ IOS.prototype.push = function(elem) {
       });
       if (!matched) {
         logger.info("We're in the middle of processing a remote debugger " +
-                    "command, waiting to run next command until done");
+                    "command (" + this.lastAtom +"), waiting to run next command until done");
         setTimeout(next, 500);
         this.queue.unshift(target);
         return;
@@ -1093,6 +1093,7 @@ IOS.prototype.executeAtom = function(atom, args, cb, alwaysDefaultFrame) {
   var frames = alwaysDefaultFrame === true ? [] : this.curWebFrames;
   this.returnedFromExecuteAtom[counter] = false;
   this.processingRemoteCmd = true;
+  this.lastAtom = atom;
   this.remote.executeAtom(atom, args, frames, function(err, res) {
     this.processingRemoteCmd = false;
     if (!this.returnedFromExecuteAtom[counter]) {
@@ -1108,6 +1109,7 @@ IOS.prototype.executeAtomAsync = function(atom, args, responseUrl, cb) {
   var counter = this.executedAtomsCounter++;
   this.returnedFromExecuteAtom[counter] = false;
   this.processingRemoteCmd = true;
+  this.lastAtom = atom;
   this.asyncResponseCb = cb;
   this.remote.executeAtomAsync(atom, args, this.curWebFrames, responseUrl, function(err, res) {
     this.processingRemoteCmd = false;
@@ -1124,7 +1126,7 @@ IOS.prototype.receiveAsyncResponse = function(asyncResponse) {
   var asyncCb = this.asyncResponseCb;
   //mark returned as true to stop looking for alerts; the js is done.
   this.returnedFromExecuteAtom = true;
-
+  this.processingRemoteCmd = false;
   if (asyncCb !== null) {
     this.parseExecuteResponse(asyncResponse, asyncCb);
     asyncCb(null, asyncResponse);
