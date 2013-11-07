@@ -299,6 +299,7 @@ RemoteDebugger.prototype.executeAtomAsync = function(atom, args, frames, respons
   } else {
     logger.info("Executing atom in default context");
     script += "(" + atomSrc + ")(" + args.join(',') + ", " + asyncCallBack + ", true )";
+      console.log('Script to execute=' + script);
   }
   this.execute(script, function(err, res) {
     if (err) {
@@ -307,6 +308,7 @@ RemoteDebugger.prototype.executeAtomAsync = function(atom, args, frames, respons
         , value: res
       });
     }
+      console.log('callback received!!!')
   });
 };
 
